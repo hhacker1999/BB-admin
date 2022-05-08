@@ -38,7 +38,7 @@ class _BbAdminState extends State<BbAdmin> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: AppRoutes.loginRoute,
+      initialRoute: AppRoutes.homeRoute,
       onGenerateRoute: (route) {
         switch (route.name) {
           case AppRoutes.loginRoute:
@@ -55,6 +55,7 @@ class _BbAdminState extends State<BbAdmin> {
                 create: (_) => HomeViewModel(
                     _appDependencies.getAllUsersUsecase,
                     _appDependencies.authenticateUserUsecase),
+                dispose: (_, model) => model.dispose(),
                 child: const HomeView(),
               ),
             );

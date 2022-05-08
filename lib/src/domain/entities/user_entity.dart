@@ -62,7 +62,7 @@ class UserEntity {
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-  
+
     result.addAll({'discordId': discordId});
     result.addAll({'plexId': plexId});
     result.addAll({'isDonor': isDonor});
@@ -73,13 +73,20 @@ class UserEntity {
     result.addAll({'donorRole': donorRole});
     result.addAll({'note': note});
     result.addAll({'dateAdded': dateAdded.millisecondsSinceEpoch});
-    result.addAll({'pastDonations': pastDonations.map((x) => x.millisecondsSinceEpoch).toList()});
+    result.addAll({
+      'pastDonations':
+          pastDonations.map((x) => x.millisecondsSinceEpoch).toList()
+    });
     result.addAll({'documentId': documentId});
-  
+
     return result;
   }
 
   factory UserEntity.fromMap(Map<String, dynamic> map) {
+    final List<DateTime> list = List.empty(growable: true);
+    map['pastDonations'].forEach((e) {
+      list.add(DateTime.fromMillisecondsSinceEpoch(e));
+    });
     return UserEntity(
       discordId: map['discordId'] ?? '',
       plexId: map['plexId'] ?? '',
@@ -91,7 +98,7 @@ class UserEntity {
       donorRole: map['donorRole'] ?? '',
       note: map['note'] ?? '',
       dateAdded: DateTime.fromMillisecondsSinceEpoch(map['dateAdded']),
-      pastDonations: [],
+      pastDonations: list,
       documentId: map['documentId'] ?? '',
     );
   }
@@ -109,35 +116,35 @@ class UserEntity {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is UserEntity &&
-      other.discordId == discordId &&
-      other.plexId == plexId &&
-      other.isDonor == isDonor &&
-      other.discordName == discordName &&
-      other.plexEmail == plexEmail &&
-      other.donationDuration == donationDuration &&
-      listEquals(other.otherRoles, otherRoles) &&
-      other.donorRole == donorRole &&
-      other.note == note &&
-      other.dateAdded == dateAdded &&
-      listEquals(other.pastDonations, pastDonations) &&
-      other.documentId == documentId;
+        other.discordId == discordId &&
+        other.plexId == plexId &&
+        other.isDonor == isDonor &&
+        other.discordName == discordName &&
+        other.plexEmail == plexEmail &&
+        other.donationDuration == donationDuration &&
+        listEquals(other.otherRoles, otherRoles) &&
+        other.donorRole == donorRole &&
+        other.note == note &&
+        other.dateAdded == dateAdded &&
+        listEquals(other.pastDonations, pastDonations) &&
+        other.documentId == documentId;
   }
 
   @override
   int get hashCode {
     return discordId.hashCode ^
-      plexId.hashCode ^
-      isDonor.hashCode ^
-      discordName.hashCode ^
-      plexEmail.hashCode ^
-      donationDuration.hashCode ^
-      otherRoles.hashCode ^
-      donorRole.hashCode ^
-      note.hashCode ^
-      dateAdded.hashCode ^
-      pastDonations.hashCode ^
-      documentId.hashCode;
+        plexId.hashCode ^
+        isDonor.hashCode ^
+        discordName.hashCode ^
+        plexEmail.hashCode ^
+        donationDuration.hashCode ^
+        otherRoles.hashCode ^
+        donorRole.hashCode ^
+        note.hashCode ^
+        dateAdded.hashCode ^
+        pastDonations.hashCode ^
+        documentId.hashCode;
   }
 }

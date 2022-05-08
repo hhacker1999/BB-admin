@@ -60,7 +60,7 @@ class _LoginViewState extends State<LoginView>
                     children: [
                       const Spacer(),
                       TweenAnimationBuilder(
-                          curve: Curves.easeOut,
+                          curve: Curves.fastLinearToSlowEaseIn,
                           duration: const Duration(milliseconds: 1500),
                           tween: Tween<double>(begin: 1.25, end: 1),
                           builder: (_, double value, __) {
