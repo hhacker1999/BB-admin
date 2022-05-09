@@ -25,7 +25,7 @@ class AppDependencies {
 
     // Facade
     _onlineDatabaseFacade =
-        OnlineDatabaseImplementation(_client, _sharedPreferences);
+        MockOnlineDatabaseImplementation();
 
     // Usecases
     _getAllUsersUsecase = GetAllUsersUsecase(_onlineDatabaseFacade);

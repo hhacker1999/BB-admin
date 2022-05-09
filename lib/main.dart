@@ -1,10 +1,12 @@
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/app/dependencies.dart';
+import 'package:bb_admin/src/domain/entities/user_entity.dart';
 import 'package:bb_admin/src/presentation/home_view/home_view_model.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view_model.dart';
 import 'package:bb_admin/src/presentation/splash_view/splash_view.dart';
 import 'package:bb_admin/src/presentation/splash_view/splash_view_model.dart';
+import 'package:bb_admin/src/presentation/user_info_view/user_info_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -59,6 +61,10 @@ class _BbAdminState extends State<BbAdmin> {
                 child: const HomeView(),
               ),
             );
+          case AppRoutes.userInfoRoute:
+            final user = route.arguments as UserEntity;
+            return MaterialPageRoute(
+                builder: (context) => UserInfoView(user: user));
           case AppRoutes.splashRoute:
           default:
             return MaterialPageRoute(

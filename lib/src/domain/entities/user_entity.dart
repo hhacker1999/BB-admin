@@ -14,10 +14,12 @@ class UserEntity {
   final String note;
   final DateTime dateAdded;
   final List<DateTime> pastDonations;
+  final String server;
   final String documentId;
   const UserEntity({
     required this.discordId,
     required this.plexId,
+    required this.server,
     required this.isDonor,
     required this.discordName,
     required this.plexEmail,
@@ -43,8 +45,10 @@ class UserEntity {
     DateTime? dateAdded,
     List<DateTime>? pastDonations,
     String? documentId,
+    String? server,
   }) {
     return UserEntity(
+      server: server ?? this.server,
       discordId: discordId ?? this.discordId,
       plexId: plexId ?? this.plexId,
       isDonor: isDonor ?? this.isDonor,
@@ -88,6 +92,7 @@ class UserEntity {
       list.add(DateTime.fromMillisecondsSinceEpoch(e));
     });
     return UserEntity(
+      server: map['server'] ?? '',
       discordId: map['discordId'] ?? '',
       plexId: map['plexId'] ?? '',
       isDonor: map['isDonor'] ?? false,

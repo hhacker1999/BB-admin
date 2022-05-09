@@ -16,12 +16,7 @@ class HomeViewModel {
       BehaviorSubject.seeded(HomeViewInitial());
 
   HomeViewModel(this._getAllUsersUsecase, this._authenticateUserUsecase) {
-    _authenticateUserUsecase
-        .execute(const AuthEntity(
-            url: 'http://192.168.0.161',
-            email: 'harsh@test.com',
-            password: 'golusadh'))
-        .then((_) => _loadItems());
+    _loadItems();
   }
 
   ValueStream<HomeViewState> get stateStream => _stateSubject;
@@ -30,20 +25,20 @@ class HomeViewModel {
     _stateSubject.add(HomeViewLoading());
     try {
       final res = await _getAllUsersUsecase.execute();
-      print(res);
-      res.forEach(
-        (element) {
-          if (element.isDonor &&
-              _isNearExpiration(element.pastDonations.last)) {
-            _nearExpireUserList.add(element);
-          } else {
-            _remainingUserList.add(element);
-          }
-        },
-      );
+      // final res = await _getAllUsersUsecase.execute();
+      // print(res);
+      // res.forEach(
+      //   (element) {
+      //     if (element.isDonor &&
+      //         _isNearExpiration(element.pastDonations.last)) {
+      //       _nearExpireUserList.add(element);
+      //     } else {
+      //       _remainingUserList.add(element);
+      //     }
+      //   },
+      // );
       _stateSubject.add(
-        HomeViewLoaded(
-            expiredDonors: _nearExpireUserList, users: _remainingUserList),
+        HomeViewLoaded(expiredDonors: [], users: res),
       );
     } catch (e) {
       _stateSubject.add(
