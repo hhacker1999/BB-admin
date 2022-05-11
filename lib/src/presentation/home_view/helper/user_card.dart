@@ -1,3 +1,4 @@
+import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,14 +20,11 @@ class MinimalUserCard extends StatelessWidget {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        margin: const EdgeInsets.symmetric(horizontal: 30),
         decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-              color: user.isDonor
-                  ? const Color(0xff6F12E8)
-                  : const Color(0xff39FF14)),
+          color: user.isDonor
+              ? AppConstants.paidUserColor
+              : AppConstants.freeUserColor,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -41,13 +39,17 @@ class MinimalUserCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     UserInfoText(
-                        text: 'Name: ' + user.discordName,
-                        fontSize: 18,
-                        weight: FontWeight.w400),
+                      text: 'Name: ' + user.discordName,
+                      style: user.isDonor
+                          ? AppConstants.paidUserCardTextStyle
+                          : AppConstants.freeUserCardTextStyle,
+                    ),
                     UserInfoText(
-                        text: 'Id: ' + user.discordId,
-                        fontSize: 18,
-                        weight: FontWeight.w400),
+                      text: 'Id: ' + user.discordId,
+                      style: user.isDonor
+                          ? AppConstants.paidUserCardTextStyle
+                          : AppConstants.freeUserCardTextStyle,
+                    ),
                   ],
                 ),
               ),

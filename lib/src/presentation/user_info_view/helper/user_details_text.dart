@@ -1,3 +1,4 @@
+import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:flutter/material.dart';
 import '../../home_view/helper/user_info_text.dart';
 
@@ -12,8 +13,8 @@ class UserDetailsText extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        UserInfoText(text: text1, fontSize: 20, weight: FontWeight.w400),
-        UserInfoText(text: text2, fontSize: 20, weight: FontWeight.w400),
+        UserInfoText(text: text1, style: AppConstants.freeUserCardTextStyle,),
+        UserInfoText(text: text2, style: AppConstants.freeUserCardTextStyle,),
       ],
     );
   }

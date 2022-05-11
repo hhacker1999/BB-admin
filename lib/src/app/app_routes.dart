@@ -3,4 +3,5 @@ class AppRoutes {
   static const homeRoute = '/home';
   static const splashRoute = '/splash';
   static const userInfoRoute = '/user';
+  static const addNewUser = '/addUser';
 }
