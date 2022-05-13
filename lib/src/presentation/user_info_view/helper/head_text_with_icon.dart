@@ -6,9 +6,11 @@ class HeadTextWithIcon extends StatelessWidget {
   final String icon;
   final String text1;
   final String text2;
-  const HeadTextWithIcon({
+  String? tag;
+  HeadTextWithIcon({
     Key? key,
     required this.icon,
+    this.tag,
     required this.text1,
     required this.text2,
   }) : super(key: key);
@@ -22,8 +24,11 @@ class HeadTextWithIcon extends StatelessWidget {
         SizedBox(
           height: 60,
           width: 60,
-          child: SvgPicture.asset(
-            icon,
+          child: Hero(
+            tag: tag ?? '',
+            child: SvgPicture.asset(
+              icon,
+            ),
           ),
         ),
         const SizedBox(

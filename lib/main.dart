@@ -1,6 +1,8 @@
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/app/dependencies.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
+import 'package:bb_admin/src/presentation/add_user_view/add_user_view.dart';
+import 'package:bb_admin/src/presentation/add_user_view/add_user_view_model.dart';
 import 'package:bb_admin/src/presentation/home_view/home_view_model.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view_model.dart';
@@ -41,7 +43,7 @@ class _BbAdminState extends State<BbAdmin> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: AppRoutes.homeRoute,
+      initialRoute: AppRoutes.splashRoute,
       onGenerateRoute: (route) {
         switch (route.name) {
           case AppRoutes.loginRoute:
@@ -57,24 +59,38 @@ class _BbAdminState extends State<BbAdmin> {
               builder: (context) => Provider<HomeViewModel>(
                 create: (_) => HomeViewModel(
                     _appDependencies.getAllUsersUsecase,
-                    _appDependencies.authenticateUserUsecase),
-                dispose: (_, model) => model.dispose(),
+                    _appDependencies.getUserUpdateStreamUsecase),
+                // dispose: (_, model) => model.dispose(),
                 child: const RevisedHomeView(),
+              ),
+            );
+          case AppRoutes.addNewUser:
+            return MaterialPageRoute(
+              builder: (context) => Provider<AddUserViewModel>(
+                create: (_) => AddUserViewModel(
+                    _appDependencies.addNewUserUsecase,
+                    _appDependencies.getServerInfoUsecase)
+                  ..getServerInfo(),
+                dispose: (_, model) => model.dispose(),
+                child: const AddUserView(),
               ),
             );
           case AppRoutes.userInfoRoute:
             final user = route.arguments as UserEntity;
             return MaterialPageRoute(
                 builder: (context) => Provider<UserInfoViewModel>(
-                    create: (_) => UserInfoViewModel(),
+                    create: (_) =>
+                        UserInfoViewModel(_appDependencies.updateUserUsecase),
                     dispose: (_, model) => model.dispose(),
                     child: UserInfoView(user: user)));
           case AppRoutes.splashRoute:
           default:
             return MaterialPageRoute(
               builder: (context) => Provider<SplashViewModel>(
+                dispose: (_, model) => model.dispose(),
                 create: (_) =>
-                    SplashViewModel(_appDependencies.isLoggedInUsecase),
+                    SplashViewModel(_appDependencies.isLoggedInUsecase)
+                      ..checkLoginState(),
                 child: const SplashView(),
               ),
             );

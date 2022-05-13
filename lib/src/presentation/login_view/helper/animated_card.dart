@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+
 import 'login_text_field.dart';
 
 class AnimatingCard extends StatelessWidget {
   final TextEditingController urlController;
   final TextEditingController emailController;
+  final String error;
+  final bool isLoading;
   final TextEditingController passwordController;
-  const AnimatingCard(
-      {super.key,
-      required this.emailController,
-      required this.passwordController,
-      required this.urlController});
+  final void Function() onPressed;
+  const AnimatingCard({
+    Key? key,
+    required this.urlController,
+    required this.emailController,
+    required this.error,
+    required this.isLoading,
+    required this.passwordController,
+    required this.onPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +52,9 @@ class AnimatingCard extends StatelessWidget {
             icon: Icons.password,
           ),
           const Spacer(),
+          if (error.isNotEmpty) Text(error),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: onPressed,
             style: ButtonStyle(
               backgroundColor:
                   MaterialStateProperty.all(const Color(0xFFA32CCA)),
@@ -53,7 +62,11 @@ class AnimatingCard extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               ),
             ),
-            child: const Text('Login'),
+            child: isLoading
+                ? const CircularProgressIndicator(
+                    strokeWidth: 2,
+                  )
+                : const Text('Login'),
           ),
         ],
       ),

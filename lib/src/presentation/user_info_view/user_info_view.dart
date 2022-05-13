@@ -120,6 +120,7 @@ class _UserInfoViewState extends State<UserInfoView> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             HeadTextWithIcon(
+              tag: updatedEntity.discordId,
                 icon: 'assets/discord.svg',
                 text1: 'Name: ${updatedEntity.discordName}',
                 text2: 'Id: ${updatedEntity.discordId}'),

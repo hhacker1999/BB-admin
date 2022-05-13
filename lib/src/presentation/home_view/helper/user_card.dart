@@ -30,7 +30,11 @@ class MinimalUserCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(flex: 2, child: SvgPicture.asset('assets/discord.svg')),
+              Expanded(
+                  flex: 2,
+                  child: Hero(
+                      tag: user.discordId,
+                      child: SvgPicture.asset('assets/discord.svg'))),
               Expanded(
                 flex: 8,
                 child: Column(

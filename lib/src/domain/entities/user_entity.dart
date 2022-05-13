@@ -10,6 +10,7 @@ class UserEntity {
   final String plexEmail;
   final int donationDuration;
   final List<String> otherRoles;
+  final int validity;
   final String donorRole;
   final String note;
   final DateTime dateAdded;
@@ -21,6 +22,7 @@ class UserEntity {
     required this.plexId,
     required this.server,
     required this.isDonor,
+    required this.validity,
     required this.discordName,
     required this.plexEmail,
     required this.donationDuration,
@@ -46,8 +48,10 @@ class UserEntity {
     List<DateTime>? pastDonations,
     String? documentId,
     String? server,
+    int? validity,
   }) {
     return UserEntity(
+      validity: validity ?? this.validity,
       server: server ?? this.server,
       discordId: discordId ?? this.discordId,
       plexId: plexId ?? this.plexId,
@@ -81,7 +85,6 @@ class UserEntity {
       'pastDonations':
           pastDonations.map((x) => x.millisecondsSinceEpoch).toList()
     });
-    result.addAll({'documentId': documentId});
 
     return result;
   }
@@ -92,6 +95,7 @@ class UserEntity {
       list.add(DateTime.fromMillisecondsSinceEpoch(e));
     });
     return UserEntity(
+      validity: 0,
       server: map['server'] ?? '',
       discordId: map['discordId'] ?? '',
       plexId: map['plexId'] ?? '',

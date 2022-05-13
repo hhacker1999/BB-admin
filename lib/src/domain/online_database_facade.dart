@@ -10,4 +10,5 @@ abstract class OnlineDatabaseFacade {
   Future<List<UserEntity>> getAllUsers();
   Future<void> addUser(UserEntity user);
   Future<void> updateUser(UserEntity user);
+  Stream<UserEntity> userUpdates();
 }

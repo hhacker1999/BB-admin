@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
 
+import 'package:bb_admin/src/app/app_constants.dart';
+
 class LoginTextFiels extends StatefulWidget {
   final bool isPassword;
   final TextEditingController controller;
   final String hintText;
   final IconData icon;
-  const LoginTextFiels(
-      {super.key,
-      required this.controller,
-      required this.isPassword,
-      required this.hintText,
-      required this.icon});
+  const LoginTextFiels({
+    Key? key,
+    required this.isPassword,
+    required this.controller,
+    required this.hintText,
+    required this.icon,
+  }) : super(key: key);
 
   @override
   State<LoginTextFiels> createState() => _LoginTextFielsState();
 }
 
 class _LoginTextFielsState extends State<LoginTextFiels> {
-  bool obscure = false;
+  bool obscure = true;
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: widget.controller,
       enabled: true,
-      cursorColor: const Color(0xFFA32CCA),
+      cursorColor: AppConstants.fieldCursorColor,
       style: TextStyle(color: Colors.grey[500]),
-      obscureText: obscure,
+      obscureText: widget.isPassword ? obscure : false,
       decoration: InputDecoration(
         suffixIcon: widget.isPassword
             ? IconButton(
@@ -48,7 +51,7 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
           borderRadius: BorderRadius.circular(17),
           borderSide: const BorderSide(
             width: 2,
-            color: Color(0xFFA32CCA),
+            color: AppConstants.fieldCursorColor,
           ),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(17)),

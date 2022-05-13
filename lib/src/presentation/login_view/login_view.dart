@@ -1,3 +1,6 @@
+import 'package:bb_admin/src/app/app_routes.dart';
+import 'package:bb_admin/src/domain/entities/auth_entity.dart';
+import 'package:bb_admin/src/presentation/helper/value_stream_consumer.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,36 +54,56 @@ class _LoginViewState extends State<LoginView>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: LayoutBuilder(builder: (context, constr) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SizedBox(
-                  height: constr.maxHeight,
-                  width: constr.maxWidth,
-                  child: Column(
-                    children: [
-                      const Spacer(),
-                      TweenAnimationBuilder(
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          duration: const Duration(milliseconds: 1500),
-                          tween: Tween<double>(begin: 1.25, end: 1),
-                          builder: (_, double value, __) {
-                            return Transform.scale(
-                              scale: value,
-                              child: FadeTransition(
-                                opacity: _fadeAnimation,
-                                child: AnimatingCard(
-                                  emailController: _emailController,
-                                  passwordController: _passwordController,
-                                  urlController: _urlController,
-                                ),
-                              ),
-                            );
-                          }),
-                      const Spacer(),
-                    ],
-                  ),
-                ),
-              );
+              return ValueStreamConsumer<LoginViewState>(
+                  listener: (_, state) {
+                    if (state is LoginViewLoggedIn) {
+                      Navigator.pushReplacementNamed(
+                          context, AppRoutes.homeRoute);
+                    }
+                  },
+                  stream: model.stateStream,
+                  builder: (context, snapshot) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: SizedBox(
+                        height: constr.maxHeight,
+                        width: constr.maxWidth,
+                        child: Column(
+                          children: [
+                            const Spacer(),
+                            TweenAnimationBuilder(
+                                curve: Curves.fastLinearToSlowEaseIn,
+                                duration: const Duration(milliseconds: 1500),
+                                tween: Tween<double>(begin: 1.25, end: 1),
+                                builder: (_, double value, __) {
+                                  return Transform.scale(
+                                    scale: value,
+                                    child: FadeTransition(
+                                      opacity: _fadeAnimation,
+                                      child: AnimatingCard(
+                                        error: snapshot is LoginViewError ? (snapshot as LoginViewError).error : '',
+                                        isLoading: snapshot is LoginViewLoading,
+                                        onPressed: () {
+                                          final AuthEntity entity = AuthEntity(
+                                              url: _urlController.text,
+                                              email: _emailController.text,
+                                              password:
+                                                  _passwordController.text);
+                                          model.logIn(entity);
+                                        },
+                                        emailController: _emailController,
+                                        passwordController: _passwordController,
+                                        urlController: _urlController,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                            const Spacer(),
+                          ],
+                        ),
+                      ),
+                    );
+                  });
             }),
           ),
         ),
