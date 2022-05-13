@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../../domain/entities/user_entity.dart';
 import 'user_info_text.dart';
 
-class MinimalUserCard extends StatelessWidget {
+class MinimalUserCard extends StatefulWidget {
   final UserEntity user;
   const MinimalUserCard({
     Key? key,
@@ -13,17 +13,37 @@ class MinimalUserCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<MinimalUserCard> createState() => _MinimalUserCardState();
+}
+
+class _MinimalUserCardState extends State<MinimalUserCard> {
+  late Color _color;
+  late TextStyle _style;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.user.validity <= 2 && widget.user.isDonor) {
+      _style = AppConstants.freeUserCardTextStyle;
+      _color = AppConstants.expireUserColor;
+    } else {
+      _style = AppConstants.paidUserCardTextStyle;
+      _color = widget.user.isDonor
+          ? AppConstants.paidUserColor
+          : AppConstants.freeUserColor;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, AppRoutes.userInfoRoute, arguments: user);
+        Navigator.pushNamed(context, AppRoutes.userInfoRoute,
+            arguments: widget.user);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         decoration: BoxDecoration(
-          color: user.isDonor
-              ? AppConstants.paidUserColor
-              : AppConstants.freeUserColor,
+          color: _color,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -32,9 +52,7 @@ class MinimalUserCard extends StatelessWidget {
             children: [
               Expanded(
                   flex: 2,
-                  child: Hero(
-                      tag: user.discordId,
-                      child: SvgPicture.asset('assets/discord.svg'))),
+                  child: SvgPicture.asset('assets/discord.svg')),
               Expanded(
                 flex: 8,
                 child: Column(
@@ -43,16 +61,11 @@ class MinimalUserCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     UserInfoText(
-                      text: 'Name: ' + user.discordName,
-                      style: user.isDonor
-                          ? AppConstants.paidUserCardTextStyle
-                          : AppConstants.freeUserCardTextStyle,
-                    ),
+                        text: 'Name: ' + widget.user.discordName,
+                        style: _style),
                     UserInfoText(
-                      text: 'Id: ' + user.discordId,
-                      style: user.isDonor
-                          ? AppConstants.paidUserCardTextStyle
-                          : AppConstants.freeUserCardTextStyle,
+                      text: 'Id: ' + widget.user.discordId,
+                      style: _style,
                     ),
                   ],
                 ),

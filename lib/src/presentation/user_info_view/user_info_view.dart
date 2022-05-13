@@ -62,7 +62,10 @@ class _UserInfoViewState extends State<UserInfoView> {
                     ),
                   ],
                 ),
-                backgroundColor: AppConstants.freeUserColor,
+                backgroundColor:
+                    updatedEntity.validity <= 2 && updatedEntity.isDonor
+                        ? AppConstants.expireUserColor
+                        : AppConstants.appBarColor,
                 onPressed: () {
                   final dialog = AwesomeDialog(
                       dialogType: DialogType.QUESTION,
@@ -99,28 +102,27 @@ class _UserInfoViewState extends State<UserInfoView> {
               )
             : null,
         appBar: AppBar(
-          backgroundColor: updatedEntity.isDonor
-              ? AppConstants.paidUserColor
-              : AppConstants.freeUserColor,
+          backgroundColor: updatedEntity.validity <= 2 && updatedEntity.isDonor
+              ? AppConstants.expireUserColor
+              : AppConstants.appBarColor,
           title: const Text('User Details'),
         ),
-        backgroundColor: Colors.black,
         body: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                updatedEntity.isDonor
-                    ? AppConstants.paidUserColor.withOpacity(0.3)
-                    : AppConstants.freeUserColor.withOpacity(0.3),
+                updatedEntity.validity <= 2 && updatedEntity.isDonor
+                    ? AppConstants.expireUserColor.withOpacity(0.8)
+                    : AppConstants.bgColor,
                 Colors.black
               ])),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             HeadTextWithIcon(
-              tag: updatedEntity.discordId,
+                tag: updatedEntity.discordId,
                 icon: 'assets/discord.svg',
                 text1: 'Name: ${updatedEntity.discordName}',
                 text2: 'Id: ${updatedEntity.discordId}'),
@@ -128,6 +130,7 @@ class _UserInfoViewState extends State<UserInfoView> {
               height: 20,
             ),
             HeadTextWithIcon(
+                tag: null,
                 icon: 'assets/plex.svg',
                 text1: 'Id: ${updatedEntity.plexId}',
                 text2: 'Email: ${updatedEntity.plexEmail}'),
@@ -136,6 +139,7 @@ class _UserInfoViewState extends State<UserInfoView> {
             ),
             if (updatedEntity.isDonor)
               HeadTextWithIcon(
+                  tag: null,
                   icon: 'assets/donation.svg',
                   text1: 'Last Donation: ${formatDate(lastDono!)}',
                   text2: 'Validity: ${updatedEntity.donationDuration}'),
@@ -143,6 +147,7 @@ class _UserInfoViewState extends State<UserInfoView> {
               height: 20,
             ),
             HeadTextWithIcon(
+                tag: null,
                 icon: 'assets/server.svg',
                 text2: 'Current Server: ${updatedEntity.server}',
                 text1: 'Added On: ${formatDate(updatedEntity.dateAdded)}'),

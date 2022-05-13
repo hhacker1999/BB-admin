@@ -52,10 +52,10 @@ class RevisedHomeView extends StatelessWidget {
                                       curve: Curves.fastLinearToSlowEaseIn,
                                       flipAxis: FlipAxis.y,
                                       child: MinimalUserCard(
-                                          user: state.users[0]))));
+                                          user: state.users[index]))));
                         },
                         separatorBuilder: (_, __) => const SizedBox(height: 30),
-                        itemCount: 500),
+                        itemCount: state.users.length),
                     // state.users.length + state.expiredDonors.length),
                   );
                 } else if (state is HomeViewError) {

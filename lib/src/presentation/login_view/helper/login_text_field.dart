@@ -26,8 +26,9 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
     return TextField(
       controller: widget.controller,
       enabled: true,
-      cursorColor: AppConstants.fieldCursorColor,
-      style: TextStyle(color: Colors.grey[500]),
+      // cursorColor: AppConstants.fieldCursorColor,
+      cursorColor: AppConstants.appBarColor,
+      // style: TextStyle(color: Colors.grey[500]),
       obscureText: widget.isPassword ? obscure : false,
       decoration: InputDecoration(
         suffixIcon: widget.isPassword
@@ -38,20 +39,20 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
                     obscure = !obscure;
                   });
                 },
-                color: Colors.grey[500],
+                // color: Colors.grey[500],
               )
             : const SizedBox(),
         prefixIcon: Icon(
           widget.icon,
-          color: Colors.grey[500],
+          // color: Colors.grey[500],
         ),
-        fillColor: Colors.black,
+        fillColor: AppConstants.textFieldFillColor,
         filled: true,
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(17),
           borderSide: const BorderSide(
             width: 2,
-            color: AppConstants.fieldCursorColor,
+            color: AppConstants.appBarColor,
           ),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(17)),

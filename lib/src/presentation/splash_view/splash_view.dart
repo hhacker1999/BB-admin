@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:animator/animator.dart';
+import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/presentation/helper/value_stream_consumer.dart';
 import 'package:bb_admin/src/presentation/splash_view/splash_view_model.dart';
@@ -14,7 +15,7 @@ class SplashView extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     return Consumer<SplashViewModel>(
       builder: (_, model, __) => Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: AppConstants.bgColor,
           body: Center(
             child: ValueStreamConsumer<SplashViewState>(
                 stream: model.state,

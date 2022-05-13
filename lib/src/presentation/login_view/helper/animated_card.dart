@@ -1,3 +1,4 @@
+import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:flutter/material.dart';
 
 import 'login_text_field.dart';
@@ -24,7 +25,8 @@ class AnimatingCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: const Color(0xFF282C35),
+        // color: const Color(0xFF282C35),
+        color: AppConstants.bgColor,
       ),
       height: 380,
       width: double.maxFinite,
@@ -57,7 +59,7 @@ class AnimatingCard extends StatelessWidget {
             onPressed: onPressed,
             style: ButtonStyle(
               backgroundColor:
-                  MaterialStateProperty.all(const Color(0xFFA32CCA)),
+                  MaterialStateProperty.all(AppConstants.appBarColor),
               padding: MaterialStateProperty.all(
                 const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               ),

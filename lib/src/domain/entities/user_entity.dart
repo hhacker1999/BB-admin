@@ -91,9 +91,11 @@ class UserEntity {
 
   factory UserEntity.fromMap(Map<String, dynamic> map) {
     final List<DateTime> list = List.empty(growable: true);
-    map['pastDonations'].forEach((e) {
-      list.add(DateTime.fromMillisecondsSinceEpoch(e));
-    });
+    if (map['pastDonations'] != null) {
+      map['pastDonations'].forEach((e) {
+        list.add(DateTime.fromMillisecondsSinceEpoch(e));
+      });
+    }
     return UserEntity(
       validity: 0,
       server: map['server'] ?? '',
@@ -103,7 +105,7 @@ class UserEntity {
       discordName: map['discordName'] ?? '',
       plexEmail: map['plexEmail'] ?? '',
       donationDuration: map['donationDuration']?.toInt() ?? 0,
-      otherRoles: List<String>.from(map['otherRoles']),
+      otherRoles: List<String>.from(map['roles']),
       donorRole: map['donorRole'] ?? '',
       note: map['note'] ?? '',
       dateAdded: DateTime.fromMillisecondsSinceEpoch(map['dateAdded']),

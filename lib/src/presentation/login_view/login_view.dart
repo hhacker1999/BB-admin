@@ -4,6 +4,7 @@ import 'package:bb_admin/src/presentation/helper/value_stream_consumer.dart';
 import 'package:bb_admin/src/presentation/login_view/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../app/app_constants.dart';
 import 'helper/animated_card.dart';
 
 class LoginView extends StatefulWidget {
@@ -24,7 +25,7 @@ class _LoginViewState extends State<LoginView>
   @override
   void initState() {
     super.initState();
-    _urlController = TextEditingController();
+    _urlController = TextEditingController(text: 'http://138.68.74.201');
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _animationController = AnimationController(
@@ -49,7 +50,8 @@ class _LoginViewState extends State<LoginView>
   Widget build(BuildContext context) {
     return Consumer<LoginViewModel>(
       builder: (_, model, __) => Scaffold(
-        backgroundColor: Colors.black,
+        // backgroundColor: Colors.black,
+        backgroundColor: AppConstants.appBarColor,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -81,7 +83,9 @@ class _LoginViewState extends State<LoginView>
                                     child: FadeTransition(
                                       opacity: _fadeAnimation,
                                       child: AnimatingCard(
-                                        error: snapshot is LoginViewError ? (snapshot as LoginViewError).error : '',
+                                        error: snapshot is LoginViewError
+                                            ? (snapshot as LoginViewError).error
+                                            : '',
                                         isLoading: snapshot is LoginViewLoading,
                                         onPressed: () {
                                           final AuthEntity entity = AuthEntity(

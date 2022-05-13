@@ -131,7 +131,7 @@ class _AddUserViewState extends State<AddUserView> {
                               ),
                               onPressed: () {
                                 _user = UserEntity(
-                                  validity: 0,
+                                    validity: 0,
                                     discordId: _discordIdController.text,
                                     plexId: _plexIdController.text,
                                     server: '',
@@ -336,19 +336,18 @@ class AddUserFormTextField extends StatelessWidget {
       child: TextField(
         maxLines: isNote ? 5 : 1,
         controller: controller,
-        style: TextStyle(color: Colors.grey[500]),
-        cursorColor: AppConstants.paidUserColor,
+        cursorColor: AppConstants.appBarColor,
         enabled: true,
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(17)),
-          fillColor: Colors.black,
+          fillColor: AppConstants.textFieldFillColor.withOpacity(0.8),
           filled: true,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(17),
             borderSide: const BorderSide(
               width: 2,
-              color: AppConstants.paidUserColor,
+              color: AppConstants.freeUserColor,
             ),
           ),
           hintText: hintText,

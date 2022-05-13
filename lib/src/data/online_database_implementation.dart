@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:appwrite/appwrite.dart';
 import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
@@ -67,6 +68,7 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
       }).toList();
       return list;
     } catch (e) {
+      log(e.toString());
       rethrow;
     }
   }

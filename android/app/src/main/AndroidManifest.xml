@@ -37,8 +37,9 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="appwrite-callback-[PROJECT_ID]" />
+                <data android:scheme="appwrite-callback-627dc48fc96e0743d3fc" />
             </intent-filter>
         </activity>
     </application>
+    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
