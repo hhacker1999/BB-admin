@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
 import 'package:bb_admin/src/presentation/add_user_view/add_user_view_model.dart';
@@ -24,22 +23,49 @@ class _AddUserViewState extends State<AddUserView> {
   late TextEditingController _plexEmailController;
   late TextEditingController _donorValidity;
   late TextEditingController _notesController;
+  late TextEditingController _donationDurationController;
+  DateTime _addedOn = DateTime.now();
   final List<String> _roles = List.empty(growable: true);
+  final List<String> _servers = List.empty(growable: true);
   final List<DateTime> _pastDonations = List.empty(growable: true);
   bool isDonor = false;
-
+  bool isRecurring = false;
   late UserEntity _user;
   String role = '';
 
   @override
   void initState() {
     super.initState();
-    _discordIdController = TextEditingController();
-    _discordNameController = TextEditingController();
-    _plexEmailController = TextEditingController();
-    _plexIdController = TextEditingController();
-    _donorValidity = TextEditingController();
-    _notesController = TextEditingController();
+    if (widget.enitity != null) {
+      _discordIdController =
+          TextEditingController(text: widget.enitity!.discordId);
+      _discordNameController =
+          TextEditingController(text: widget.enitity!.discordName);
+      _plexEmailController =
+          TextEditingController(text: widget.enitity!.plexEmail);
+      _plexIdController = TextEditingController(text: widget.enitity!.plexId);
+      _plexIdController = TextEditingController(text: widget.enitity!.plexId);
+      _notesController = TextEditingController(text: widget.enitity!.note);
+      _addedOn = widget.enitity!.dateAdded;
+      _roles.addAll(widget.enitity!.otherRoles);
+      _pastDonations.addAll(widget.enitity!.pastDonations);
+      if (widget.enitity!.isDonor) {
+        isDonor = widget.enitity!.isDonor;
+        role = widget.enitity!.donorRole;
+        _donationDurationController =
+            TextEditingController(text:widget.enitity!.donationDuration.toString());
+        _donorValidity =
+            TextEditingController(text: widget.enitity!.validity.toString());
+      }
+    } else {
+      _discordIdController = TextEditingController();
+      _discordNameController = TextEditingController();
+      _plexEmailController = TextEditingController();
+      _plexIdController = TextEditingController();
+      _donorValidity = TextEditingController();
+      _notesController = TextEditingController();
+      _donationDurationController = TextEditingController();
+    }
   }
 
   @override
@@ -50,6 +76,7 @@ class _AddUserViewState extends State<AddUserView> {
     _plexIdController.dispose();
     _donorValidity.dispose();
     _notesController.dispose();
+    _donationDurationController.dispose();
     super.dispose();
   }
 
@@ -92,27 +119,84 @@ class _AddUserViewState extends State<AddUserView> {
                               controller: _plexEmailController,
                               isNote: false,
                               hintText: 'Plex Email'),
-                          const VSpace20(),
-                          AddUserFormTextField(
-                              isNote: true,
-                              controller: _notesController,
-                              hintText: 'Additional notes'),
-                          const VSpace20(),
-                          CustomDropDown(
-                            title: 'Donor Roles',
-                            items: [
-                              ...['None'],
-                              ...state.entity.donorRoles
-                            ],
-                            onSelect: (value) {
-                              if (value != 'None') {
-                                role = value;
-                                isDonor = true;
-                              }
-                            },
+                          const Divider(
+                            height: 20,
+                            color: Colors.grey,
                           ),
-                          const VSpace20(),
+                          CustomDateTimePicker(
+                              initialDate: _addedOn,
+                              style: null,
+                              title: 'Added On',
+                              onDateSelected: (date) {
+                                _addedOn = date;
+                              }),
+                          const Divider(
+                            height: 20,
+                            color: Colors.grey,
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Is Donor',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Switch(
+                                  activeColor: AppConstants.appBarColor,
+                                  value: (isDonor),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isDonor = value;
+                                    });
+                                  }),
+                            ],
+                          ),
+                          isDonor
+                              ? CustomDonationWidget(
+                                  //FIX: Fix date time to real time
+                                  lastDonated: DateTime.now(),
+                                  onDonationDateSelected: (value) {
+                                    _pastDonations.add(value);
+                                  },
+                                  durationController:
+                                      _donationDurationController,
+                                  onSelect: (value) {
+                                    if (value != 'None') {
+                                      role = value;
+                                    }
+                                  },
+                                  onRecurringToggle: (value) {
+                                    isRecurring = value;
+                                  },
+                                  items: [
+                                    ...['None'],
+                                    ...state.entity.donorRoles
+                                  ],
+                                  isRecurring: isRecurring)
+                              : const SizedBox(),
+                          const Divider(
+                            height: 20,
+                            color: Colors.grey,
+                          ),
                           CustomCheckBox(
+                              name: state.entity.servers,
+                              title: 'Select servers',
+                              onTrue: (value) {
+                                _servers.add(value);
+                              },
+                              onFalse: (value) {
+                                _servers.remove(value);
+                              }),
+                          const Divider(
+                            height: 20,
+                            color: Colors.grey,
+                          ),
+                          CustomCheckBox(
+                            title: 'Select roles from List below',
                             name: state.entity.roles,
                             onFalse: (value) {
                               _roles.remove(value);
@@ -123,6 +207,14 @@ class _AddUserViewState extends State<AddUserView> {
                               }
                             },
                           ),
+                          const Divider(
+                            height: 20,
+                            color: Colors.grey,
+                          ),
+                          AddUserFormTextField(
+                              isNote: true,
+                              controller: _notesController,
+                              hintText: 'Additional notes'),
                           const VSpace20(),
                           ElevatedButton(
                               style: ButtonStyle(
@@ -134,7 +226,7 @@ class _AddUserViewState extends State<AddUserView> {
                                     validity: 0,
                                     discordId: _discordIdController.text,
                                     plexId: _plexIdController.text,
-                                    server: '',
+                                    server: _servers.first,
                                     isDonor: false,
                                     discordName: _discordNameController.text,
                                     plexEmail: _plexEmailController.text,
@@ -148,6 +240,10 @@ class _AddUserViewState extends State<AddUserView> {
                                 model.submitUserDetails(_user);
                               },
                               child: const Text('Submit User Details')),
+                          const VSpace20(),
+                          const VSpace20(),
+                          const VSpace20(),
+                          const VSpace20(),
                         ],
                       ),
                     );
@@ -157,6 +253,181 @@ class _AddUserViewState extends State<AddUserView> {
                 }),
           ));
     });
+  }
+}
+
+class CustomDonationWidget extends StatefulWidget {
+  final DateTime lastDonated;
+  final void Function(DateTime) onDonationDateSelected;
+  final void Function(String) onSelect;
+  final void Function(bool) onRecurringToggle;
+  final List<String> items;
+  final bool isRecurring;
+  final TextEditingController durationController;
+  const CustomDonationWidget(
+      {Key? key,
+      required this.durationController,
+      required this.onSelect,
+      required this.onRecurringToggle,
+      required this.items,
+      required this.lastDonated,
+      required this.isRecurring,
+      required this.onDonationDateSelected})
+      : super(key: key);
+
+  @override
+  State<CustomDonationWidget> createState() => _CustomDonationWidgetState();
+}
+
+class _CustomDonationWidgetState extends State<CustomDonationWidget> {
+  late bool isRecurring;
+  @override
+  void initState() {
+    super.initState();
+    isRecurring = widget.isRecurring;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CustomDropDown(
+            onSelect: (value) {},
+            items: widget.items,
+            title: 'Select Donor Role'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Is Recurring',
+              style: TextStyle(color: Colors.white, fontSize: 22),
+            ),
+            Switch(
+                activeColor: AppConstants.appBarColor,
+                value: isRecurring,
+                onChanged: (value) {
+                  setState(() {
+                    isRecurring = value;
+                    widget.onRecurringToggle(isRecurring);
+                  });
+                }),
+          ],
+        ),
+        CustomDateTimePicker(
+          initialDate: widget.lastDonated,
+          title: 'Donated on',
+          onDateSelected: widget.onDonationDateSelected,
+          style: const TextStyle(color: Colors.white, fontSize: 22),
+        ),
+        Row(
+          children: [
+            const Text(
+              'Donation Duration(Days)',
+              style: TextStyle(color: Colors.white, fontSize: 22),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Flexible(
+              child: TextField(
+                keyboardType: TextInputType.number,
+                controller: widget.durationController,
+                cursorColor: AppConstants.appBarColor,
+                enabled: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(17)),
+                  fillColor: AppConstants.textFieldFillColor.withOpacity(0.8),
+                  filled: true,
+                  hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    borderSide: const BorderSide(
+                      width: 2,
+                      color: AppConstants.freeUserColor,
+                    ),
+                  ),
+                  hintText: 'Duration',
+                ),
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+}
+
+class CustomDateTimePicker extends StatefulWidget {
+  final DateTime initialDate;
+  final TextStyle? style;
+  final String title;
+  final void Function(DateTime) onDateSelected;
+  const CustomDateTimePicker({
+    Key? key,
+    required this.initialDate,
+    required this.title,
+    required this.style,
+    required this.onDateSelected,
+  }) : super(key: key);
+
+  @override
+  State<CustomDateTimePicker> createState() => _CustomDateTimePickerState();
+}
+
+class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
+  late DateTime _current;
+  @override
+  void initState() {
+    super.initState();
+    _current = widget.initialDate;
+  }
+
+  String formatDate(DateTime date) {
+    return '${date.year}/${date.month}/${date.day}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          widget.title,
+          style: widget.style ??
+              const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
+        ),
+        Text(
+          formatDate(_current),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+          ),
+        ),
+        IconButton(
+          onPressed: () async {
+            final dateSelected = (await showDatePicker(
+                context: context,
+                initialDate: _current,
+                firstDate: DateTime(2020),
+                lastDate: _current));
+            if (dateSelected != null) {
+              setState(() {
+                _current = dateSelected;
+                widget.onDateSelected(_current);
+              });
+            }
+          },
+          icon: const Icon(Icons.calendar_month),
+          color: Colors.white,
+        ),
+      ],
+    );
   }
 }
 
@@ -172,12 +443,14 @@ class VSpace20 extends StatelessWidget {
 }
 
 class CustomCheckBox extends StatefulWidget {
+  final String title;
   final List<String> name;
   final void Function(String) onTrue;
   final void Function(String) onFalse;
   const CustomCheckBox({
     Key? key,
     required this.name,
+    required this.title,
     required this.onTrue,
     required this.onFalse,
   }) : super(key: key);
@@ -193,9 +466,10 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Select roles from List below',
-          style: TextStyle(color: Colors.white, fontSize: 22),
+        Text(
+          widget.title,
+          style: const TextStyle(
+              color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
         ),
         const SizedBox(
           height: 20,
@@ -301,7 +575,8 @@ class _CustomDropDownState extends State<CustomDropDown> {
                       value: e,
                       child: Text(
                         e,
-                        style: TextStyle(color: Colors.white, fontSize: 20),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ))
                 .toList(),
