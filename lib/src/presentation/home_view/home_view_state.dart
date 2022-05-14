@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../domain/entities/user_entity.dart';
 
 abstract class HomeViewState {}
@@ -14,10 +16,19 @@ class HomeViewError implements HomeViewState {
 }
 
 class HomeViewLoaded implements HomeViewState {
-  final List<UserEntity> expiredDonors;
   final List<UserEntity> users;
   const HomeViewLoaded({
-    required this.expiredDonors,
     required this.users,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+  
+    return other is HomeViewLoaded &&
+      listEquals(other.users, users);
+  }
+
+  @override
+  int get hashCode => users.hashCode;
 }

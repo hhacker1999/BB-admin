@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
 import 'package:bb_admin/src/domain/usecases/add_new_user_usecase.dart';
 import 'package:bb_admin/src/domain/usecases/get_server_info_usecase.dart';
@@ -21,7 +19,8 @@ class AddUserViewModel {
 
   Future<void> submitUserDetails(UserEntity user,
       {required bool shouldUpdate}) async {
-    _stateSubject.add(AddUserViewLoading());
+    final serverInfo = (_stateSubject.value as AddUserViewLoaded).entity;
+    _stateSubject.add(AddUserViewLoaded(entity: serverInfo, isLoading: true));
     try {
       if (shouldUpdate) {
         await _updateUserUsecase.execute(user);
@@ -30,23 +29,23 @@ class AddUserViewModel {
       }
       _stateSubject.add(AddUserViewAdded());
     } catch (e) {
-      log(e.toString());
       _stateSubject.add(AddUserViewError(e.toString()));
     }
   }
 
   Future<void> getServerInfo() async {
-    _stateSubject.add(AddUserViewLoading());
-    final entity = await _getServerInfoUsecase.execute();
-    _stateSubject.add(AddUserViewLoaded(entity: entity));
+    try {
+      final entity = await _getServerInfoUsecase.execute();
+      _stateSubject.add(AddUserViewLoaded(entity: entity, isLoading: false));
+    } catch (e) {
+      _stateSubject.add(AddUserViewError(e.toString()));
+    }
   }
 
   void dispose() {}
 }
 
 abstract class AddUserViewState {}
-
-class AddUserViewLoading implements AddUserViewState {}
 
 class AddUserViewInitial implements AddUserViewState {}
 
@@ -59,8 +58,10 @@ class AddUserViewError implements AddUserViewState {
 }
 
 class AddUserViewLoaded implements AddUserViewState {
+  final bool isLoading;
   final ServerInfoEntity entity;
   const AddUserViewLoaded({
+    required this.isLoading,
     required this.entity,
   });
 }

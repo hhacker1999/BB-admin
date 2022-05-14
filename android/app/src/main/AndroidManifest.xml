@@ -1,8 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.bb_admin">
    <application
-        android:label="bb_admin"
+        android:label="BB Admin"
         android:name="${applicationName}"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

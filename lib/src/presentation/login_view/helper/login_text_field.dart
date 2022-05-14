@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:bb_admin/src/app/app_constants.dart';
 
 class LoginTextFiels extends StatefulWidget {
@@ -26,9 +25,7 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
     return TextField(
       controller: widget.controller,
       enabled: true,
-      // cursorColor: AppConstants.fieldCursorColor,
       cursorColor: AppConstants.appBarColor,
-      // style: TextStyle(color: Colors.grey[500]),
       obscureText: widget.isPassword ? obscure : false,
       decoration: InputDecoration(
         suffixIcon: widget.isPassword
@@ -44,7 +41,7 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
             : const SizedBox(),
         prefixIcon: Icon(
           widget.icon,
-          // color: Colors.grey[500],
+          color: Colors.black,
         ),
         fillColor: AppConstants.textFieldFillColor,
         filled: true,

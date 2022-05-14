@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
 import 'package:bb_admin/src/presentation/add_user_view/add_user_view_model.dart';
-import 'package:bb_admin/src/presentation/helper/value_stream_builder.dart';
+
+import '../helper/value_stream_consumer.dart';
 
 class AddUserView extends StatefulWidget {
   final UserEntity? enitity;
@@ -30,7 +32,7 @@ class _AddUserViewState extends State<AddUserView> {
   final List<DateTime> _pastDonations = List.empty(growable: true);
   bool isDonor = false;
   bool isRecurring = false;
-  late UserEntity _user;
+  UserEntity? _user;
   String? role;
   String? documentId;
 
@@ -51,7 +53,6 @@ class _AddUserViewState extends State<AddUserView> {
       _plexIdController = TextEditingController(text: widget.enitity!.plexId);
       _notesController = TextEditingController(text: widget.enitity!.note);
       _addedOn = widget.enitity!.dateAdded;
-      _roles.addAll(widget.enitity!.roles);
       if (widget.enitity!.pastDonations != null) {
         _pastDonations.addAll(widget.enitity!.pastDonations!);
       }
@@ -89,204 +90,240 @@ class _AddUserViewState extends State<AddUserView> {
   @override
   Widget build(BuildContext context) {
     return Consumer<AddUserViewModel>(builder: (_, model, __) {
-      return Scaffold(
-          backgroundColor: AppConstants.bgColor,
-          appBar: AppBar(
-            title: Text(widget.enitity == null ? 'Add user' : 'Update User'),
-            backgroundColor: AppConstants.appBarColor,
-          ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            child: ValueStreamBuilder<AddUserViewState>(
-                stream: model.stateStream,
-                builder: (_, state) {
-                  if (state is AddUserViewLoaded) {
-                    return SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const VSpace20(),
-                          AddUserFormTextField(
-                              isNote: false,
-                              controller: _discordNameController,
-                              hintText: 'Discord Name'),
-                          const VSpace20(),
-                          AddUserFormTextField(
-                              isNote: false,
-                              controller: _discordIdController,
-                              hintText: 'Discord Id'),
-                          const VSpace20(),
-                          AddUserFormTextField(
-                              isNote: false,
-                              controller: _plexIdController,
-                              hintText: 'Plex Id'),
-                          const VSpace20(),
-                          AddUserFormTextField(
-                              controller: _plexEmailController,
-                              isNote: false,
-                              hintText: 'Plex Email'),
-                          const Divider(
-                            height: 20,
-                            color: Colors.grey,
-                          ),
-                          CustomDateTimePicker(
-                              initialDate: _addedOn,
-                              style: null,
-                              title: 'Added On',
-                              onDateSelected: (date) {
-                                _addedOn = date;
-                              }),
-                          const Divider(
-                            height: 20,
-                            color: Colors.grey,
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Is Donor',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Switch(
-                                  activeColor: AppConstants.appBarColor,
-                                  value: isDonor,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      isDonor = value;
-                                    });
-                                  }),
-                            ],
-                          ),
-                          isDonor
-                              ? CustomDonationWidget(
-                                  donorRole: role,
-                                  lastDonated: _pastDonations.isEmpty
-                                      ? DateTime.now()
-                                      : _pastDonations.last,
-                                  onDonationDateSelected: (value) {
-                                    _pastDonations.add(value);
-                                  },
-                                  durationController:
-                                      _donationDurationController,
-                                  onSelect: (value) {
-                                    role = value;
-                                  },
-                                  onRecurringToggle: (value) {
-                                    isRecurring = value;
-                                  },
-                                  items: state.entity.donorRoles,
-                                  isRecurring: isRecurring)
-                              : const SizedBox(),
-                          const Divider(
-                            height: 20,
-                            color: Colors.grey,
-                          ),
-                          CustomCheckBox(
-                              oldNames: _servers,
-                              name: state.entity.servers,
-                              title: 'Select servers',
-                              onTrue: (value) {
-                                _servers.add(value);
-                              },
+      return WillPopScope(
+        onWillPop: () {
+          if (_user == null) {
+            Navigator.pop(context, _user);
+          }
+          return Future.value(false);
+        },
+        child: Scaffold(
+            backgroundColor: AppConstants.bgColor,
+            appBar: AppBar(
+              title: Text(widget.enitity == null ? 'Add user' : 'Update User'),
+              backgroundColor: AppConstants.appBarColor,
+            ),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              child: ValueStreamConsumer<AddUserViewState>(
+                  listener: (_, value) {
+                    if (value is AddUserViewAdded) {
+                      Navigator.pop(context, _user!);
+                    }
+                  },
+                  stream: model.stateStream,
+                  builder: (_, state) {
+                    if (state is AddUserViewLoaded) {
+                      return SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const VSpace20(),
+                            AddUserFormTextField(
+                                isNote: false,
+                                controller: _discordNameController,
+                                hintText: 'Discord Name'),
+                            const VSpace20(),
+                            AddUserFormTextField(
+                                isNote: false,
+                                controller: _discordIdController,
+                                hintText: 'Discord Id'),
+                            const VSpace20(),
+                            AddUserFormTextField(
+                                isNote: false,
+                                controller: _plexIdController,
+                                hintText: 'Plex Id'),
+                            const VSpace20(),
+                            AddUserFormTextField(
+                                controller: _plexEmailController,
+                                isNote: false,
+                                hintText: 'Plex Email'),
+                            const Divider(
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                            CustomDateTimePicker(
+                                initialDate: _addedOn,
+                                style: null,
+                                title: 'Added On',
+                                onDateSelected: (date) {
+                                  _addedOn = date;
+                                }),
+                            const Divider(
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Is Donor',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Switch(
+                                    activeColor: AppConstants.appBarColor,
+                                    value: isDonor,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        isDonor = value;
+                                      });
+                                    }),
+                              ],
+                            ),
+                            isDonor
+                                ? CustomDonationWidget(
+                                    donorRole: role,
+                                    lastDonated: _pastDonations.isEmpty
+                                        ? DateTime.now()
+                                        : _pastDonations.last,
+                                    onDonationDateSelected: (value) {
+                                      _pastDonations.add(value);
+                                    },
+                                    durationController:
+                                        _donationDurationController,
+                                    onSelect: (value) {
+                                      role = value;
+                                    },
+                                    onRecurringToggle: (value) {
+                                      isRecurring = value;
+                                    },
+                                    items: state.entity.donorRoles,
+                                    isRecurring: isRecurring)
+                                : const SizedBox(),
+                            const Divider(
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                            CustomCheckBox(
+                                oldNames: _servers,
+                                name: state.entity.servers,
+                                title: 'Select servers',
+                                onTrue: (value) {
+                                  _servers.add(value);
+                                },
+                                onFalse: (value) {
+                                  _servers.remove(value);
+                                }),
+                            const Divider(
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                            CustomCheckBox(
+                              oldNames: _roles,
+                              title: 'Select roles from List below',
+                              name: state.entity.roles,
                               onFalse: (value) {
-                                _servers.remove(value);
-                              }),
-                          const Divider(
-                            height: 20,
-                            color: Colors.grey,
-                          ),
-                          CustomCheckBox(
-                            oldNames: _roles,
-                            title: 'Select roles from List below',
-                            name: state.entity.roles,
-                            onFalse: (value) {
-                              _roles.remove(value);
-                            },
-                            onTrue: (value) {
-                              if (!_roles.contains(value)) {
-                                _roles.add(value);
-                              }
-                            },
-                          ),
-                          const Divider(
-                            height: 20,
-                            color: Colors.grey,
-                          ),
-                          AddUserFormTextField(
-                              isNote: true,
-                              controller: _notesController,
-                              hintText: 'Additional notes'),
-                          const VSpace20(),
-                          ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    AppConstants.appBarColor),
-                              ),
-                              onPressed: () {
-                                if (isDonor) {
-                                  if (donorValidity != null) {
-                                    donorValidity = donorValidity! +
-                                        int.parse(
-                                            _donationDurationController.text);
-                                  } else {
-                                    donorValidity = int.parse(
-                                        _donationDurationController.text);
-                                  }
-                                  _user = UserEntity(
-                                      isRecurring: isRecurring,
-                                      validity: donorValidity,
-                                      discordId: _discordIdController.text,
-                                      plexId: _plexIdController.text,
-                                      servers: _servers,
-                                      isDonor: true,
-                                      discordName: _discordNameController.text,
-                                      plexEmail: _plexEmailController.text,
-                                      donationDuration: int.parse(
-                                          _donationDurationController.text),
-                                      roles: _roles,
-                                      donorRole: role,
-                                      note: _notesController.text,
-                                      dateAdded: _addedOn,
-                                      pastDonations: _pastDonations,
-                                      documentId: documentId ?? '');
-                                } else {
-                                  _user = UserEntity(
-                                      discordId: _discordIdController.text,
-                                      plexId: _plexIdController.text,
-                                      servers: _servers,
-                                      isDonor: false,
-                                      discordName: _discordNameController.text,
-                                      plexEmail: _plexEmailController.text,
-                                      roles: _roles,
-                                      note: _notesController.text,
-                                      dateAdded: _addedOn,
-                                      documentId: documentId ?? '');
-                                }
-                                if (widget.enitity == null) {
-                                  model.submitUserDetails(_user,
-                                      shouldUpdate: false);
-                                } else {
-                                  model.submitUserDetails(_user,
-                                      shouldUpdate: true);
+                                _roles.remove(value);
+                              },
+                              onTrue: (value) {
+                                if (!_roles.contains(value)) {
+                                  _roles.add(value);
                                 }
                               },
-                              child: const Text('Save User Details')),
-                          const VSpace20(),
-                          const VSpace20(),
-                          const VSpace20(),
-                          const VSpace20(),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return const SizedBox();
-                  }
-                }),
-          ));
+                            ),
+                            const Divider(
+                              height: 20,
+                              color: Colors.grey,
+                            ),
+                            AddUserFormTextField(
+                                isNote: true,
+                                controller: _notesController,
+                                hintText: 'Additional notes'),
+                            const VSpace20(),
+                            ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      AppConstants.appBarColor),
+                                ),
+                                onPressed: () {
+                                  if (isDonor) {
+                                    final donoDuration = int.parse(
+                                        _donationDurationController.text);
+                                    if (_pastDonations.isEmpty) {
+                                      _pastDonations.add(DateTime.now());
+                                    }
+                                    donorValidity = _pastDonations.last
+                                        .add(Duration(days: donoDuration))
+                                        .difference(DateTime.now())
+                                        .inDays;
+                                    _user = UserEntity(
+                                        isRecurring: isRecurring,
+                                        validity: donorValidity,
+                                        discordId: _discordIdController.text,
+                                        plexId: _plexIdController.text,
+                                        servers: _servers,
+                                        isDonor: true,
+                                        discordName:
+                                            _discordNameController.text,
+                                        plexEmail: _plexEmailController.text,
+                                        donationDuration: int.parse(
+                                            _donationDurationController.text),
+                                        roles: _roles,
+                                        donorRole: role,
+                                        note: _notesController.text,
+                                        dateAdded: _addedOn,
+                                        pastDonations: _pastDonations,
+                                        documentId: documentId ?? '');
+                                  } else {
+                                    _user = UserEntity(
+                                        discordId: _discordIdController.text,
+                                        plexId: _plexIdController.text,
+                                        servers: _servers,
+                                        isDonor: false,
+                                        discordName:
+                                            _discordNameController.text,
+                                        plexEmail: _plexEmailController.text,
+                                        roles: _roles,
+                                        note: _notesController.text,
+                                        dateAdded: _addedOn,
+                                        documentId: documentId ?? '');
+                                  }
+                                  if (widget.enitity == null) {
+                                    model.submitUserDetails(_user!,
+                                        shouldUpdate: false);
+                                  } else {
+                                    log(_user!.toString());
+                                    model.submitUserDetails(_user!,
+                                        shouldUpdate: true);
+                                  }
+                                },
+                                child: state.isLoading
+                                    ? const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      )
+                                    : const Text('Save User Details')),
+                            const VSpace20(),
+                            const VSpace20(),
+                            const VSpace20(),
+                            const VSpace20(),
+                          ],
+                        ),
+                      );
+                    } else if (state is AddUserViewInitial) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      );
+                    } else if (state is AddUserViewError) {
+                      return Center(
+                        child: Text(
+                          state.error,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      );
+                    } else {
+                      return const SizedBox();
+                    }
+                  }),
+            )),
+      );
     });
   }
 }
@@ -326,6 +363,7 @@ class _CustomDonationWidgetState extends State<CustomDonationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    log(widget.items.toString());
     return Column(
       children: [
         CustomDropDown(
@@ -453,7 +491,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                 context: context,
                 initialDate: _current,
                 firstDate: DateTime(2020),
-                lastDate: _current));
+                lastDate: DateTime.now()));
             if (dateSelected != null) {
               setState(() {
                 _current = dateSelected;

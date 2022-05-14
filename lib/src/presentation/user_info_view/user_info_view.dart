@@ -1,9 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
+
 import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/app/app_routes.dart';
-import 'package:bb_admin/src/presentation/user_info_view/user_info_view_model.dart';
-import 'package:flutter/material.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
-import 'package:provider/provider.dart';
+import 'package:bb_admin/src/presentation/home_view/helper/user_info_text.dart';
+import 'package:bb_admin/src/presentation/user_info_view/user_info_view_model.dart';
+
 import 'helper/head_text_with_icon.dart';
 import 'helper/notes_widget.dart';
 import 'helper/roles_widget.dart';
@@ -24,14 +28,18 @@ class _UserInfoViewState extends State<UserInfoView> {
   void initState() {
     super.initState();
     updatedEntity = widget.user;
-    if (widget.user.isDonor) {
-      lastDono = widget.user.pastDonations!.last;
+  }
+
+  void updateState() {
+    if (updatedEntity.isDonor) {
+      lastDono = updatedEntity.pastDonations!.last;
     } else {
       lastDono = null;
     }
-    roles.addAll(widget.user.roles);
-    if (widget.user.isDonor) {
-      roles.add(widget.user.donorRole!);
+    roles.clear();
+    roles.addAll(updatedEntity.roles);
+    if (updatedEntity.isDonor) {
+      roles.add(updatedEntity.donorRole!);
     }
     roles.reversed;
   }
@@ -42,17 +50,21 @@ class _UserInfoViewState extends State<UserInfoView> {
 
   @override
   Widget build(BuildContext context) {
+    updateState();
     return Consumer<UserInfoViewModel>(builder: (_, model, __) {
       return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: AppConstants.appBarColor,
+            backgroundColor:
+                updatedEntity.isDonor && updatedEntity.validity! <= 2
+                    ? AppConstants.expireUserColor.withOpacity(0.8)
+                    : AppConstants.bgColor,
             onPressed: () async {
               final newUser = await Navigator.pushNamed(
-                      context, AppRoutes.addNewUser, arguments: widget.user)
-                  as UserEntity;
-              if (newUser != updatedEntity) {
+                  context, AppRoutes.addNewUser,
+                  arguments: updatedEntity);
+              if (newUser != null) {
                 setState(() {
-                  updatedEntity = newUser;
+                  updatedEntity = newUser as UserEntity;
                 });
               }
             },
@@ -93,24 +105,21 @@ class _UserInfoViewState extends State<UserInfoView> {
             const SizedBox(
               height: 20,
             ),
-            if (updatedEntity.isDonor)
-              HeadTextWithIcon(
-                  tag: null,
-                  icon: 'assets/donation.svg',
-                  text1: 'Last Donation: ${formatDate(lastDono!)}',
-                  text2: 'Validity: ${updatedEntity.donationDuration}'),
-            const SizedBox(
-              height: 20,
-            ),
             HeadTextWithIcon(
                 tag: null,
                 icon: 'assets/server.svg',
-                text2: 'Current Server: ${updatedEntity.servers}',
+                text2: 'Servers: ${updatedEntity.servers}',
                 text1: 'Added On: ${formatDate(updatedEntity.dateAdded)}'),
             const SizedBox(
               height: 20,
             ),
-            RolesWidget(roles: roles),
+            if (updatedEntity.isDonor)
+              DonorWidget(
+                  user: updatedEntity, dateString: formatDate(lastDono!)),
+            const SizedBox(
+              height: 20,
+            ),
+            if (updatedEntity.roles.isNotEmpty) RolesWidget(roles: roles),
             const SizedBox(
               height: 20,
             ),
@@ -123,5 +132,49 @@ class _UserInfoViewState extends State<UserInfoView> {
         ),
       );
     });
+  }
+}
+
+class DonorWidget extends StatelessWidget {
+  final UserEntity user;
+  final String dateString;
+  const DonorWidget({
+    Key? key,
+    required this.user,
+    required this.dateString,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            SvgPicture.asset(
+              'assets/donation.svg',
+              height: 60,
+              width: 60,
+            ),
+            const Text(
+              'Donations',
+              style: TextStyle(color: Colors.white, fontSize: 22),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        UserInfoText(
+            text: 'Last Donation: $dateString',
+            style: AppConstants.freeUserCardTextStyle),
+        UserInfoText(
+            text: 'Validity: ${user.validity}',
+            style: AppConstants.freeUserCardTextStyle),
+        UserInfoText(
+            text: user.isRecurring! ? 'Type: Recurring' : 'Type: Non Recurring',
+            style: AppConstants.freeUserCardTextStyle),
+      ],
+    );
   }
 }

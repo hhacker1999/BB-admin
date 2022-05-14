@@ -17,6 +17,7 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
   OnlineDatabaseImplementation(this._client, this._sharedPreferences) {
     _account = Account(_client);
     _database = Database(_client);
+    _realtime = Realtime(_client);
   }
 
   @override
@@ -70,7 +71,6 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
       }).toList();
       return list;
     } catch (e) {
-      log(e.toString());
       rethrow;
     }
   }
@@ -90,17 +90,24 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
   @override
   Future<void> updateUser(UserEntity user) async {
     final map = user.toMap();
-    try {
+    // try {
+    //   map.remove('validity');
+    //   map.remove('documentId');
+    //   log(map.toString());
+    //   await _database.updateDocument(
+    //       collectionId: AppConstants.usersCollectionId,
+    //       documentId: user.documentId,
+    //       data: map);
+    // } catch (e) {
+    //   rethrow;
+    // }
+
       map.remove('validity');
       map.remove('documentId');
-      log(map.toString());
       await _database.updateDocument(
           collectionId: AppConstants.usersCollectionId,
           documentId: user.documentId,
           data: map);
-    } catch (e) {
-      rethrow;
-    }
   }
 
   @override
@@ -125,7 +132,6 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
 
   @override
   Stream<UserEntity> userUpdates() {
-    _realtime = Realtime(_client);
     final sub = _realtime
         .subscribe(['collections.${AppConstants.usersCollectionId}.documents']);
     return sub.stream.map((event) {

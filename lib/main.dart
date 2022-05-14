@@ -1,3 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/app/dependencies.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
@@ -10,9 +15,7 @@ import 'package:bb_admin/src/presentation/splash_view/splash_view.dart';
 import 'package:bb_admin/src/presentation/splash_view/splash_view_model.dart';
 import 'package:bb_admin/src/presentation/user_info_view/user_info_view.dart';
 import 'package:bb_admin/src/presentation/user_info_view/user_info_view_model.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'src/presentation/home_view/home_view.dart';
 
 Future<void> main() async {
@@ -42,6 +45,10 @@ class _BbAdminState extends State<BbAdmin> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       initialRoute: AppRoutes.splashRoute,
       onGenerateRoute: (route) {
@@ -69,26 +76,29 @@ class _BbAdminState extends State<BbAdmin> {
             if (route.arguments != null) {
               user = route.arguments as UserEntity;
             }
-            return MaterialPageRoute(
-              builder: (context) => Provider<AddUserViewModel>(
-                create: (_) => AddUserViewModel(
-                    _appDependencies.addNewUserUsecase,
-                    _appDependencies.getServerInfoUsecase,
-                    _appDependencies.updateUserUsecase)
-                  ..getServerInfo(),
-                dispose: (_, model) => model.dispose(),
-                child: AddUserView(
-                  enitity: user,
-                ),
-              ),
+            return CustomScaleTransition(
+              page: Builder(builder: (context) {
+                return Provider<AddUserViewModel>(
+                  create: (_) => AddUserViewModel(
+                      _appDependencies.addNewUserUsecase,
+                      _appDependencies.getServerInfoUsecase,
+                      _appDependencies.updateUserUsecase)
+                    ..getServerInfo(),
+                  dispose: (_, model) => model.dispose(),
+                  child: AddUserView(
+                    enitity: user,
+                  ),
+                );
+              }),
             );
           case AppRoutes.userInfoRoute:
             final user = route.arguments as UserEntity;
             return MaterialPageRoute(
-                builder: (context) => Provider<UserInfoViewModel>(
-                    create: (_) => UserInfoViewModel(),
-                    dispose: (_, model) => model.dispose(),
-                    child: UserInfoView(user: user)));
+              builder: (context) => Provider<UserInfoViewModel>(
+                  create: (_) => UserInfoViewModel(),
+                  dispose: (_, model) => model.dispose(),
+                  child: UserInfoView(user: user)),
+            );
           case AppRoutes.splashRoute:
           default:
             return MaterialPageRoute(
@@ -104,4 +114,25 @@ class _BbAdminState extends State<BbAdmin> {
       },
     );
   }
+}
+
+class CustomScaleTransition extends PageRouteBuilder {
+  final Widget page;
+  CustomScaleTransition({
+    required this.page,
+  }) : super(
+            pageBuilder: (_, __, ___) => page,
+            transitionDuration: const Duration(milliseconds: 1500),
+            reverseTransitionDuration: const Duration(milliseconds: 400),
+            transitionsBuilder: (_, animation, __, child) {
+              animation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.fastLinearToSlowEaseIn,
+                  reverseCurve: Curves.fastOutSlowIn);
+              return ScaleTransition(
+                alignment: Alignment.centerRight,
+                scale: animation,
+                child: child,
+              );
+            });
 }

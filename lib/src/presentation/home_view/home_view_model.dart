@@ -9,7 +9,6 @@ import 'home_view_state.dart';
 
 class HomeViewModel {
   final List<UserEntity> _baseUserList = List.empty(growable: true);
-  final List<UserEntity> _nearExpireUserList = List.empty(growable: true);
   final List<UserEntity> _remainingUserList = List.empty(growable: true);
   final GetAllUsersUsecase _getAllUsersUsecase;
   final GetUserUpdateStreamUsecase _getUserUpdateStreamUsecase;
@@ -28,12 +27,9 @@ class HomeViewModel {
     try {
       final res = await _getAllUsersUsecase.execute();
       _baseUserList.addAll(res);
-      // for (int i = 0; i < 50; i++) {
-        _remainingUserList.addAll(res);
-      // }
+      _remainingUserList.addAll(res);
       _stateSubject.add(
-        HomeViewLoaded(
-            expiredDonors: _nearExpireUserList, users: _remainingUserList),
+        HomeViewLoaded(users: _remainingUserList),
       );
     } catch (e) {
       _stateSubject.add(
@@ -54,9 +50,10 @@ class HomeViewModel {
       } else {
         _baseUserList.add(event);
       }
+      _remainingUserList.clear();
+      _remainingUserList.addAll(_baseUserList);
       _stateSubject.add(
-        HomeViewLoaded(
-            expiredDonors: _nearExpireUserList, users: _remainingUserList),
+        HomeViewLoaded(users: _remainingUserList),
       );
     });
   }
