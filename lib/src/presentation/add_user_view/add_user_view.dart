@@ -21,9 +21,9 @@ class _AddUserViewState extends State<AddUserView> {
   late TextEditingController _discordIdController;
   late TextEditingController _plexIdController;
   late TextEditingController _plexEmailController;
-  late TextEditingController _donorValidity;
   late TextEditingController _notesController;
   late TextEditingController _donationDurationController;
+  int? donorValidity;
   DateTime _addedOn = DateTime.now();
   final List<String> _roles = List.empty(growable: true);
   final List<String> _servers = List.empty(growable: true);
@@ -31,12 +31,16 @@ class _AddUserViewState extends State<AddUserView> {
   bool isDonor = false;
   bool isRecurring = false;
   late UserEntity _user;
-  String role = '';
+  String? role;
+  String? documentId;
 
   @override
   void initState() {
     super.initState();
     if (widget.enitity != null) {
+      _servers.addAll(widget.enitity!.servers);
+      _roles.addAll(widget.enitity!.roles);
+      documentId = widget.enitity!.documentId;
       _discordIdController =
           TextEditingController(text: widget.enitity!.discordId);
       _discordNameController =
@@ -47,22 +51,25 @@ class _AddUserViewState extends State<AddUserView> {
       _plexIdController = TextEditingController(text: widget.enitity!.plexId);
       _notesController = TextEditingController(text: widget.enitity!.note);
       _addedOn = widget.enitity!.dateAdded;
-      _roles.addAll(widget.enitity!.otherRoles);
-      _pastDonations.addAll(widget.enitity!.pastDonations);
+      _roles.addAll(widget.enitity!.roles);
+      if (widget.enitity!.pastDonations != null) {
+        _pastDonations.addAll(widget.enitity!.pastDonations!);
+      }
       if (widget.enitity!.isDonor) {
+        isRecurring = widget.enitity!.isRecurring!;
+        donorValidity = widget.enitity!.validity;
         isDonor = widget.enitity!.isDonor;
-        role = widget.enitity!.donorRole;
-        _donationDurationController =
-            TextEditingController(text:widget.enitity!.donationDuration.toString());
-        _donorValidity =
-            TextEditingController(text: widget.enitity!.validity.toString());
+        role = widget.enitity!.donorRole!;
+        _donationDurationController = TextEditingController(
+            text: widget.enitity!.donationDuration.toString());
+      } else {
+        _donationDurationController = TextEditingController();
       }
     } else {
       _discordIdController = TextEditingController();
       _discordNameController = TextEditingController();
       _plexEmailController = TextEditingController();
       _plexIdController = TextEditingController();
-      _donorValidity = TextEditingController();
       _notesController = TextEditingController();
       _donationDurationController = TextEditingController();
     }
@@ -74,7 +81,6 @@ class _AddUserViewState extends State<AddUserView> {
     _discordNameController.dispose();
     _plexEmailController.dispose();
     _plexIdController.dispose();
-    _donorValidity.dispose();
     _notesController.dispose();
     _donationDurationController.dispose();
     super.dispose();
@@ -86,7 +92,7 @@ class _AddUserViewState extends State<AddUserView> {
       return Scaffold(
           backgroundColor: AppConstants.bgColor,
           appBar: AppBar(
-            title: const Text('Add user'),
+            title: Text(widget.enitity == null ? 'Add user' : 'Update User'),
             backgroundColor: AppConstants.appBarColor,
           ),
           body: Padding(
@@ -147,7 +153,7 @@ class _AddUserViewState extends State<AddUserView> {
                               ),
                               Switch(
                                   activeColor: AppConstants.appBarColor,
-                                  value: (isDonor),
+                                  value: isDonor,
                                   onChanged: (value) {
                                     setState(() {
                                       isDonor = value;
@@ -157,25 +163,22 @@ class _AddUserViewState extends State<AddUserView> {
                           ),
                           isDonor
                               ? CustomDonationWidget(
-                                  //FIX: Fix date time to real time
-                                  lastDonated: DateTime.now(),
+                                  donorRole: role,
+                                  lastDonated: _pastDonations.isEmpty
+                                      ? DateTime.now()
+                                      : _pastDonations.last,
                                   onDonationDateSelected: (value) {
                                     _pastDonations.add(value);
                                   },
                                   durationController:
                                       _donationDurationController,
                                   onSelect: (value) {
-                                    if (value != 'None') {
-                                      role = value;
-                                    }
+                                    role = value;
                                   },
                                   onRecurringToggle: (value) {
                                     isRecurring = value;
                                   },
-                                  items: [
-                                    ...['None'],
-                                    ...state.entity.donorRoles
-                                  ],
+                                  items: state.entity.donorRoles,
                                   isRecurring: isRecurring)
                               : const SizedBox(),
                           const Divider(
@@ -183,6 +186,7 @@ class _AddUserViewState extends State<AddUserView> {
                             color: Colors.grey,
                           ),
                           CustomCheckBox(
+                              oldNames: _servers,
                               name: state.entity.servers,
                               title: 'Select servers',
                               onTrue: (value) {
@@ -196,6 +200,7 @@ class _AddUserViewState extends State<AddUserView> {
                             color: Colors.grey,
                           ),
                           CustomCheckBox(
+                            oldNames: _roles,
                             title: 'Select roles from List below',
                             name: state.entity.roles,
                             onFalse: (value) {
@@ -222,24 +227,54 @@ class _AddUserViewState extends State<AddUserView> {
                                     AppConstants.appBarColor),
                               ),
                               onPressed: () {
-                                _user = UserEntity(
-                                    validity: 0,
-                                    discordId: _discordIdController.text,
-                                    plexId: _plexIdController.text,
-                                    server: _servers.first,
-                                    isDonor: false,
-                                    discordName: _discordNameController.text,
-                                    plexEmail: _plexEmailController.text,
-                                    donationDuration: 0,
-                                    otherRoles: _roles,
-                                    donorRole: role,
-                                    note: _notesController.text,
-                                    dateAdded: DateTime.now(),
-                                    pastDonations: [],
-                                    documentId: '');
-                                model.submitUserDetails(_user);
+                                if (isDonor) {
+                                  if (donorValidity != null) {
+                                    donorValidity = donorValidity! +
+                                        int.parse(
+                                            _donationDurationController.text);
+                                  } else {
+                                    donorValidity = int.parse(
+                                        _donationDurationController.text);
+                                  }
+                                  _user = UserEntity(
+                                      isRecurring: isRecurring,
+                                      validity: donorValidity,
+                                      discordId: _discordIdController.text,
+                                      plexId: _plexIdController.text,
+                                      servers: _servers,
+                                      isDonor: true,
+                                      discordName: _discordNameController.text,
+                                      plexEmail: _plexEmailController.text,
+                                      donationDuration: int.parse(
+                                          _donationDurationController.text),
+                                      roles: _roles,
+                                      donorRole: role,
+                                      note: _notesController.text,
+                                      dateAdded: _addedOn,
+                                      pastDonations: _pastDonations,
+                                      documentId: documentId ?? '');
+                                } else {
+                                  _user = UserEntity(
+                                      discordId: _discordIdController.text,
+                                      plexId: _plexIdController.text,
+                                      servers: _servers,
+                                      isDonor: false,
+                                      discordName: _discordNameController.text,
+                                      plexEmail: _plexEmailController.text,
+                                      roles: _roles,
+                                      note: _notesController.text,
+                                      dateAdded: _addedOn,
+                                      documentId: documentId ?? '');
+                                }
+                                if (widget.enitity == null) {
+                                  model.submitUserDetails(_user,
+                                      shouldUpdate: false);
+                                } else {
+                                  model.submitUserDetails(_user,
+                                      shouldUpdate: true);
+                                }
                               },
-                              child: const Text('Submit User Details')),
+                              child: const Text('Save User Details')),
                           const VSpace20(),
                           const VSpace20(),
                           const VSpace20(),
@@ -257,6 +292,7 @@ class _AddUserViewState extends State<AddUserView> {
 }
 
 class CustomDonationWidget extends StatefulWidget {
+  final String? donorRole;
   final DateTime lastDonated;
   final void Function(DateTime) onDonationDateSelected;
   final void Function(String) onSelect;
@@ -267,6 +303,7 @@ class CustomDonationWidget extends StatefulWidget {
   const CustomDonationWidget(
       {Key? key,
       required this.durationController,
+      required this.donorRole,
       required this.onSelect,
       required this.onRecurringToggle,
       required this.items,
@@ -292,7 +329,8 @@ class _CustomDonationWidgetState extends State<CustomDonationWidget> {
     return Column(
       children: [
         CustomDropDown(
-            onSelect: (value) {},
+            initialItem: widget.donorRole,
+            onSelect: widget.onSelect,
             items: widget.items,
             title: 'Select Donor Role'),
         Row(
@@ -443,6 +481,7 @@ class VSpace20 extends StatelessWidget {
 }
 
 class CustomCheckBox extends StatefulWidget {
+  final List<String> oldNames;
   final String title;
   final List<String> name;
   final void Function(String) onTrue;
@@ -451,6 +490,7 @@ class CustomCheckBox extends StatefulWidget {
     Key? key,
     required this.name,
     required this.title,
+    required this.oldNames,
     required this.onTrue,
     required this.onFalse,
   }) : super(key: key);
@@ -476,6 +516,7 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
         ),
         ...widget.name
             .map((name) => SingleCheckBoxWidget(
+                  isChecked: widget.oldNames.contains(name),
                   name: name,
                   onFalse: widget.onFalse,
                   onTrue: widget.onTrue,
@@ -487,12 +528,14 @@ class _CustomCheckBoxState extends State<CustomCheckBox> {
 }
 
 class SingleCheckBoxWidget extends StatefulWidget {
+  final bool isChecked;
   final void Function(String) onTrue;
   final void Function(String) onFalse;
   final String name;
   const SingleCheckBoxWidget({
     Key? key,
     required this.onTrue,
+    required this.isChecked,
     required this.name,
     required this.onFalse,
   }) : super(key: key);
@@ -502,7 +545,14 @@ class SingleCheckBoxWidget extends StatefulWidget {
 }
 
 class _SingleCheckBoxWidgetState extends State<SingleCheckBoxWidget> {
-  bool isChecked = false;
+  late bool isChecked;
+
+  @override
+  void initState() {
+    super.initState();
+    isChecked = widget.isChecked;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -531,12 +581,14 @@ class _SingleCheckBoxWidgetState extends State<SingleCheckBoxWidget> {
 
 class CustomDropDown extends StatefulWidget {
   final List<String> items;
+  final String? initialItem;
   final String title;
   final void Function(String) onSelect;
   const CustomDropDown({
     Key? key,
     required this.onSelect,
     required this.items,
+    required this.initialItem,
     required this.title,
   }) : super(key: key);
 
@@ -545,7 +597,13 @@ class CustomDropDown extends StatefulWidget {
 }
 
 class _CustomDropDownState extends State<CustomDropDown> {
-  String selected = '';
+  late String? selected;
+  @override
+  void initState() {
+    super.initState();
+    selected = widget.initialItem;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -558,7 +616,6 @@ class _CustomDropDownState extends State<CustomDropDown> {
           width: 20,
         ),
         DropdownButton(
-            // focusColor: AppConstants.fieldCursorColor,
             dropdownColor: AppConstants.appBarColor,
             style: TextStyle(color: Colors.grey[700]),
             iconSize: 28,
@@ -568,7 +625,7 @@ class _CustomDropDownState extends State<CustomDropDown> {
               style: TextStyle(color: Colors.white),
             ),
             autofocus: true,
-            value: selected.isEmpty ? null : selected,
+            value: selected,
             items: widget.items
                 .map((e) => DropdownMenuItem<String>(
                       enabled: true,

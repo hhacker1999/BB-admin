@@ -65,22 +65,28 @@ class _BbAdminState extends State<BbAdmin> {
               ),
             );
           case AppRoutes.addNewUser:
+            UserEntity? user;
+            if (route.arguments != null) {
+              user = route.arguments as UserEntity;
+            }
             return MaterialPageRoute(
               builder: (context) => Provider<AddUserViewModel>(
                 create: (_) => AddUserViewModel(
                     _appDependencies.addNewUserUsecase,
-                    _appDependencies.getServerInfoUsecase)
+                    _appDependencies.getServerInfoUsecase,
+                    _appDependencies.updateUserUsecase)
                   ..getServerInfo(),
                 dispose: (_, model) => model.dispose(),
-                child: const AddUserView(),
+                child: AddUserView(
+                  enitity: user,
+                ),
               ),
             );
           case AppRoutes.userInfoRoute:
             final user = route.arguments as UserEntity;
             return MaterialPageRoute(
                 builder: (context) => Provider<UserInfoViewModel>(
-                    create: (_) =>
-                        UserInfoViewModel(_appDependencies.updateUserUsecase),
+                    create: (_) => UserInfoViewModel(),
                     dispose: (_, model) => model.dispose(),
                     child: UserInfoView(user: user)));
           case AppRoutes.splashRoute:

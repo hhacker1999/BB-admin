@@ -1,5 +1,5 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bb_admin/src/app/app_constants.dart';
+import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/presentation/user_info_view/user_info_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
@@ -19,29 +19,21 @@ class UserInfoView extends StatefulWidget {
 class _UserInfoViewState extends State<UserInfoView> {
   late DateTime? lastDono;
   late UserEntity updatedEntity;
-  late TextEditingController _validityControler;
   final List<String> roles = List.empty(growable: true);
   @override
   void initState() {
     super.initState();
-    _validityControler = TextEditingController();
     updatedEntity = widget.user;
     if (widget.user.isDonor) {
-      lastDono = widget.user.pastDonations.last;
+      lastDono = widget.user.pastDonations!.last;
     } else {
       lastDono = null;
     }
-    roles.addAll(widget.user.otherRoles);
+    roles.addAll(widget.user.roles);
     if (widget.user.isDonor) {
-      roles.add(widget.user.donorRole);
+      roles.add(widget.user.donorRole!);
     }
     roles.reversed;
-  }
-
-  @override
-  void dispose() {
-    _validityControler.dispose();
-    super.dispose();
   }
 
   String formatDate(DateTime date) {
@@ -52,57 +44,21 @@ class _UserInfoViewState extends State<UserInfoView> {
   Widget build(BuildContext context) {
     return Consumer<UserInfoViewModel>(builder: (_, model, __) {
       return Scaffold(
-        floatingActionButton: !updatedEntity.isDonor
-            ? FloatingActionButton.extended(
-                label: Row(
-                  children: const [
-                    Text('Upgrade to Donor'),
-                    Icon(
-                      Icons.upgrade,
-                    ),
-                  ],
-                ),
-                backgroundColor:
-                    updatedEntity.validity <= 2 && updatedEntity.isDonor
-                        ? AppConstants.expireUserColor
-                        : AppConstants.appBarColor,
-                onPressed: () {
-                  final dialog = AwesomeDialog(
-                      dialogType: DialogType.QUESTION,
-                      animType: AnimType.TOPSLIDE,
-                      btnCancelOnPress: () {
-                        updatedEntity.pastDonations.add(DateTime.now());
-                        updatedEntity = updatedEntity.copyWith(
-                          donorRole: 'Silver Tier',
-                          isDonor: true,
-                          donationDuration: 30,
-                        );
-                        model.updateUserDetails(updatedEntity);
-                        setState(() {
-                          lastDono = updatedEntity.pastDonations.last;
-                        });
-                      },
-                      btnOkOnPress: () {
-                        updatedEntity.pastDonations.add(DateTime.now());
-                        updatedEntity = updatedEntity.copyWith(
-                          isDonor: true,
-                          donationDuration: 30,
-                          donorRole: 'Gold Tier',
-                        );
-                        model.updateUserDetails(updatedEntity);
-                        setState(() {
-                          lastDono = updatedEntity.pastDonations.last;
-                        });
-                      },
-                      btnOkText: 'Gold Tier',
-                      btnCancelText: 'Silver Tier',
-                      context: (context));
-                  dialog.show();
-                },
-              )
-            : null,
+        floatingActionButton: FloatingActionButton.extended(
+            backgroundColor: AppConstants.appBarColor,
+            onPressed: () async {
+              final newUser = await Navigator.pushNamed(
+                      context, AppRoutes.addNewUser, arguments: widget.user)
+                  as UserEntity;
+              if (newUser != updatedEntity) {
+                setState(() {
+                  updatedEntity = newUser;
+                });
+              }
+            },
+            label: const Text('Edit Details')),
         appBar: AppBar(
-          backgroundColor: updatedEntity.validity <= 2 && updatedEntity.isDonor
+          backgroundColor: updatedEntity.isDonor && updatedEntity.validity! <= 2
               ? AppConstants.expireUserColor
               : AppConstants.appBarColor,
           title: const Text('User Details'),
@@ -113,7 +69,7 @@ class _UserInfoViewState extends State<UserInfoView> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                updatedEntity.validity <= 2 && updatedEntity.isDonor
+                updatedEntity.isDonor && updatedEntity.validity! <= 2
                     ? AppConstants.expireUserColor.withOpacity(0.8)
                     : AppConstants.bgColor,
                 Colors.black
@@ -149,7 +105,7 @@ class _UserInfoViewState extends State<UserInfoView> {
             HeadTextWithIcon(
                 tag: null,
                 icon: 'assets/server.svg',
-                text2: 'Current Server: ${updatedEntity.server}',
+                text2: 'Current Server: ${updatedEntity.servers}',
                 text1: 'Added On: ${formatDate(updatedEntity.dateAdded)}'),
             const SizedBox(
               height: 20,

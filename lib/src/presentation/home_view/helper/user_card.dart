@@ -22,14 +22,17 @@ class _MinimalUserCardState extends State<MinimalUserCard> {
   @override
   void initState() {
     super.initState();
-    if (widget.user.validity <= 2 && widget.user.isDonor) {
-      _style = AppConstants.freeUserCardTextStyle;
-      _color = AppConstants.expireUserColor;
+    if (widget.user.isDonor) {
+      if (widget.user.validity! <= 2) {
+        _style = AppConstants.freeUserCardTextStyle;
+        _color = AppConstants.expireUserColor;
+      } else {
+        _color = AppConstants.paidUserColor;
+        _style = AppConstants.paidUserCardTextStyle;
+      }
     } else {
       _style = AppConstants.paidUserCardTextStyle;
-      _color = widget.user.isDonor
-          ? AppConstants.paidUserColor
-          : AppConstants.freeUserColor;
+      _color = AppConstants.freeUserColor;
     }
   }
 
@@ -50,9 +53,7 @@ class _MinimalUserCardState extends State<MinimalUserCard> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                  flex: 2,
-                  child: SvgPicture.asset('assets/discord.svg')),
+              Expanded(flex: 2, child: SvgPicture.asset('assets/discord.svg')),
               Expanded(
                 flex: 8,
                 child: Column(

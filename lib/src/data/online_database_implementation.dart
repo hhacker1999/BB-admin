@@ -23,6 +23,7 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
   Future<void> addUser(UserEntity user) async {
     final Map<String, dynamic> map = user.toMap();
     map.remove('documentId');
+    map.remove('validity');
     try {
       await _database.createDocument(
           collectionId: AppConstants.usersCollectionId,
@@ -59,9 +60,10 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
         userMap['documentId'] = user.$id;
         final userEntity = UserEntity.fromMap(userMap);
         if (userEntity.isDonor) {
-          final val = DateTime.now().compareTo(userEntity.pastDonations.last) -
-              userEntity.donationDuration;
-          return userEntity.copyWith(validity: val);
+          final endDate = userEntity.pastDonations!.last
+              .add(Duration(days: userEntity.donationDuration!));
+          final val = endDate.difference(DateTime.now());
+          return userEntity.copyWith(validity: val.inDays);
         } else {
           return userEntity;
         }
@@ -89,6 +91,9 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
   Future<void> updateUser(UserEntity user) async {
     final map = user.toMap();
     try {
+      map.remove('validity');
+      map.remove('documentId');
+      log(map.toString());
       await _database.updateDocument(
           collectionId: AppConstants.usersCollectionId,
           documentId: user.documentId,
@@ -124,7 +129,15 @@ class OnlineDatabaseImplementation implements OnlineDatabaseFacade {
     final sub = _realtime
         .subscribe(['collections.${AppConstants.usersCollectionId}.documents']);
     return sub.stream.map((event) {
-      return UserEntity.fromMap(event.payload);
+      final userEntity = UserEntity.fromMap(event.payload);
+      if (userEntity.isDonor) {
+        final endDate = userEntity.pastDonations!.last
+            .add(Duration(days: userEntity.donationDuration!));
+        final val = endDate.difference(DateTime.now());
+        return userEntity.copyWith(validity: val.inDays);
+      } else {
+        return userEntity;
+      }
     });
   }
 }

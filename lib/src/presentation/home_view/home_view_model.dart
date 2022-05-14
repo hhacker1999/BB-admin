@@ -28,20 +28,19 @@ class HomeViewModel {
     try {
       final res = await _getAllUsersUsecase.execute();
       _baseUserList.addAll(res);
-      for (int i = 0; i < 50; i++) {
+      // for (int i = 0; i < 50; i++) {
         _remainingUserList.addAll(res);
-      }
+      // }
       _stateSubject.add(
         HomeViewLoaded(
             expiredDonors: _nearExpireUserList, users: _remainingUserList),
       );
     } catch (e) {
-      log(e.toString());
-      // _stateSubject.add(
-      //   HomeViewError(
-      //     error: e.toString(),
-      //   ),
-      // );
+      _stateSubject.add(
+        HomeViewError(
+          error: e.toString(),
+        ),
+      );
     }
   }
 
