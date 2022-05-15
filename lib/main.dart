@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:bb_admin/src/app/dependencies.dart';
 import 'package:bb_admin/src/domain/entities/user_entity.dart';
@@ -66,7 +65,8 @@ class _BbAdminState extends State<BbAdmin> {
               builder: (context) => Provider<HomeViewModel>(
                 create: (_) => HomeViewModel(
                     _appDependencies.getAllUsersUsecase,
-                    _appDependencies.getUserUpdateStreamUsecase),
+                    _appDependencies.getUserUpdateStreamUsecase,
+                    _appDependencies.getServerInfoUsecase),
                 // dispose: (_, model) => model.dispose(),
                 child: const RevisedHomeView(),
               ),

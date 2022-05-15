@@ -1,12 +1,13 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 class UserEntity {
-  final String discordId;
+  String? discordId;
   final String plexId;
   final bool isDonor;
   final String discordName;
-  final String plexEmail;
+  String? plexEmail;
   int? donationDuration;
   final List<String> roles;
   int? validity;
@@ -73,56 +74,54 @@ class UserEntity {
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-
-    result.addAll({'discordId': discordId});
+  
+    if(discordId != null){
+      result.addAll({'discordId': discordId});
+    }
     result.addAll({'plexId': plexId});
     result.addAll({'isDonor': isDonor});
     result.addAll({'discordName': discordName});
-    result.addAll({'plexEmail': plexEmail});
-    if (donationDuration != null) {
+    if(plexEmail != null){
+      result.addAll({'plexEmail': plexEmail});
+    }
+    if(donationDuration != null){
       result.addAll({'donationDuration': donationDuration});
     }
     result.addAll({'roles': roles});
-    if (validity != null) {
+    if(validity != null){
       result.addAll({'validity': validity});
     }
-    if (donorRole != null) {
+    if(donorRole != null){
       result.addAll({'donorRole': donorRole});
     }
     result.addAll({'note': note});
     result.addAll({'dateAdded': dateAdded.millisecondsSinceEpoch});
-    if (pastDonations != null) {
-      result.addAll({
-        'pastDonations':
-            pastDonations!.map((x) => x?.millisecondsSinceEpoch).toList()
-      });
+    if(pastDonations != null){
+      result.addAll({'pastDonations': pastDonations!.map((x) => x?.millisecondsSinceEpoch).toList()});
     }
     result.addAll({'servers': servers});
     result.addAll({'documentId': documentId});
-    if (isRecurring != null) {
+    if(isRecurring != null){
       result.addAll({'isRecurring': isRecurring});
     }
-
+  
     return result;
   }
 
   factory UserEntity.fromMap(Map<String, dynamic> map) {
     return UserEntity(
-      discordId: map['discordId'] ?? '',
+      discordId: map['discordId'],
       plexId: map['plexId'] ?? '',
       isDonor: map['isDonor'] ?? false,
       discordName: map['discordName'] ?? '',
-      plexEmail: map['plexEmail'] ?? '',
+      plexEmail: map['plexEmail'],
       donationDuration: map['donationDuration']?.toInt(),
       roles: List<String>.from(map['roles']),
       validity: map['validity']?.toInt(),
       donorRole: map['donorRole'],
       note: map['note'] ?? '',
       dateAdded: DateTime.fromMillisecondsSinceEpoch(map['dateAdded']),
-      pastDonations: map['pastDonations'] != null
-          ? List<DateTime>.from(map['pastDonations']
-              ?.map((x) => DateTime.fromMillisecondsSinceEpoch(x)))
-          : null,
+      pastDonations: map['pastDonations'] != null ? List<DateTime>.from(map['pastDonations']?.map((x) => DateTime.fromMillisecondsSinceEpoch(x))) : null,
       servers: List<String>.from(map['servers']),
       documentId: map['documentId'] ?? '',
       isRecurring: map['isRecurring'],

@@ -36,7 +36,7 @@ class _LoginTextFielsState extends State<LoginTextFiels> {
                     obscure = !obscure;
                   });
                 },
-                // color: Colors.grey[500],
+                color: Colors.black,
               )
             : const SizedBox(),
         prefixIcon: Icon(

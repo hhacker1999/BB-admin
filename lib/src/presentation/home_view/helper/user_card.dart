@@ -1,7 +1,6 @@
 import 'package:bb_admin/src/app/app_constants.dart';
 import 'package:bb_admin/src/app/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../../domain/entities/user_entity.dart';
 import 'user_info_text.dart';
 
@@ -38,41 +37,41 @@ class _MinimalUserCardState extends State<MinimalUserCard> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, AppRoutes.userInfoRoute,
-            arguments: widget.user);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        decoration: BoxDecoration(
-          color: _color,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(flex: 2, child: SvgPicture.asset('assets/discord.svg')),
-              Expanded(
-                flex: 8,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    UserInfoText(
-                        text: 'Name: ' + widget.user.discordName,
-                        style: _style),
-                    UserInfoText(
-                      text: 'Id: ' + widget.user.discordId,
-                      style: _style,
-                    ),
-                  ],
-                ),
-              ),
-            ]),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+      decoration: BoxDecoration(
+        color: _color,
+        borderRadius: BorderRadius.circular(10),
       ),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+                flex: 2,
+                child: Image.asset(
+                  'assets/icon.png',
+                  height: 60,
+                  width: 60,
+                )),
+            Expanded(
+              flex: 8,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  UserInfoText(
+                      text: 'Discord Name: ' + widget.user.discordName,
+                      style: _style),
+                  UserInfoText(
+                    text: 'Plex Name: ' + widget.user.plexId,
+                    style: _style,
+                  ),
+                ],
+              ),
+            ),
+          ]),
     );
   }
 }
